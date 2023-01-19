@@ -9,7 +9,7 @@ Vue.config.productionTip = false
 
 Vue.use(VueAxios, axios)
 
-Vue.prototype.$backend_url = 'http://192.168.2.91:5001/'
+Vue.prototype.$backend_url = 'http://192.168.1.13:5001/'
 
 new Vue({
   router,

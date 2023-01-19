@@ -1,82 +1,89 @@
 <template>
-                <v-card flat  class="cardPosition">
-                    
-                        <v-col>
-                            <v-card-title ><h1>Login-Up</h1></v-card-title>
-                        </v-col>
-                        <v-col>
-                            <v-img :src="require('@/assets/loading.gif')" style="width: 100px; height: 100px;">
-                            </v-img>
-                        </v-col>
-                    
+    <v-app style="background-color:#B9D9EB">
+        <v-row>
+            <v-col>
+
+                <alertComponent :alertdata="alertdata" v-show="showAlert"/>
+                <div style="margin-top:5%">
+                    <v-card class="cardPosition">
+                        <v-card-title><h1>Login-Up</h1>
+                            <v-col style="background-color:white">
+                                <v-img :src="require('@/assets/loading.gif')" style="width: 100px; height: 100px;" ></v-img>
+                            </v-col>
+                        </v-card-title>
+
+                            <v-col cols="12" md="12" style="align-content: center;" >
+                                    <v-text-field
+                                    outlined dense
+                                    v-model="username"
+                                    required
+                                    label="Username"
+                                    >
+                                    </v-text-field>
+                            </v-col>
+                            
+
+                            <v-col cols="12" md="12">
+                                <v-text-field 
+                                outlined dense
+                                :append-icon="show4 ? 'mdi-eye' : 'mdi-eye-off'"
+                                :type="show4 ? 'text' : 'password'"  
+                                @click:append="show4 = !show4"
+                                v-model="password"
+                                required
+                                label="password"
+                                ></v-text-field>
+                            </v-col>
+                                
+                            <v-row>
+                                <!-- <v-col>
+                                    <v-btn style="display: block; margin-left: auto; margin-right: auto ;background-color: #0047AB;" @click="loginToDashboard()" >Log-In</v-btn>
+                                </v-col> -->
+                            <p style="display: block; margin-left: auto; margin-right: auto ">
+                                <input
+                                :disabled="this.disableLoginButton"
+                                class="loginButton"
+                                type="submit"
+                                @click.stop.prevent="loginToDashboard()"
+                                :value="this.disableLoginButton? 'loading': 'Login'"
+                                />
+                            </p>
+                            </v-row>    
+                        </v-card>
+                </div>
                 
-                    <v-col>
-                        <v-row>
-                                <v-text-field
-                                v-model="username"
-                                required>
-                                </v-text-field>
-                        </v-row>
-                        
-                    </v-col>
-
-                    <v-col>
-                        <v-row>
-                            <v-text-field
-                            :append-icon="show4 ? 'mdi-eye' : 'mdi-eye-off'"
-                            :type="show4 ? 'text' : 'password'"  
-                            @click:append="show4 = !show4"
-                            v-model="password"
-                            required
-                            ></v-text-field>
-                        </v-row>
-                    </v-col>
-                            
-                    <div>
-                        <v-row>
-                            <v-col>
-                                <v-btn style="color:white; background-color: blue;" @click="loginToDashboard()">Log-In</v-btn>
-                            </v-col>
-                            
-                            <v-col >
-                                <v-btn stSyle="background-color:red" @click="forgetUserPass"> 
-                                Forget-Password
-                                </v-btn>
-                            </v-col>
-
-                            <v-col>
-                                <v-btn  
-                                    style="background-color:yellowgreen"
-                                    color="primary"
-                                    elevation="15"
-                                    large
-                                    @click="createNewUser()">
-                                    <v-icon>
-                                        mdi-account
-                                    </v-icon>
-                                    create user
-                                </v-btn>
-                            </v-col>
-                        </v-row>
-
-                    </div>
-                            
-                </v-card>
+                <div class="cardPosition alink">
+                    <v-row>    
+                        <v-col>
+                            <a href="#" @click="createNewUser">Create An account</a>
+                        </v-col>  
+                        <v-col>
+                            <a style="margin-left:200px" href="#" @click="forgetUserPass">Forget-password</a> 
+                        </v-col>          
+                    </v-row>
+                </div>
                 
-    <!-- </v-img> -->
+            </v-col>
+        </v-row>
+    </v-app>       
 </template>
 
 <script>
+import alertComponent from '../components/alertComponent.vue'
 import axios from 'axios';
 export default {
+    components:{
+        alertComponent
+    },
   data(){
     return {
-        //username details
         username:'',
-        //password details
         show4: false,
         password:'',
-        loginUser:false
+        loginUser:false,
+        disableLoginButton:false,
+        alertdata:[],
+        showAlert:false
        
     }
   },
@@ -86,6 +93,7 @@ export default {
 
     },
     loginToDashboard(){
+        this.disableLoginButton=true;
         if(this.username==='' && this.password==='')
         {
             window.alert("please enter username and password")
@@ -102,14 +110,26 @@ export default {
                 url: `${this.$backend_url}/login?username=${this.username}&password=${this.password}`,
                 };
                 axios(config).then(response=>{
-                    console.log("inside login page",response)
-                    if (response.data.data===true){
-                        window.alert("login successfuly")
-                        this.$router.push({name:'home',params:{loginTrue:true}})
+                    console.log("inside login page",response.data)
+                    if (response.data.status===true)
+                    {
+                        this.showAlert = true
+                        this.disableLoginButton=false;
+                        this.alertdata =[`Successfully login ${this.username}`,true,'green']
+                        setInterval(() => {
+                            this.showAlert = false
+                            this.alertdata = []
+                        }, 2000);
+                    }else{
+                        this.showAlert = true
+                        this.alertdata =[`${response.data.message}`,true,'red']
+                        this.disableLoginButton=false;
+                        setInterval(() => {
+                            this.showAlert = false
+                            this.alertdata = []
+                        }, 2000);
                     }
-                    else{
-                        window.alert("please enter correct login details")
-                    }
+                    
                 })}
         },
         forgetUserPass(){
@@ -121,37 +141,26 @@ export default {
 </script>
 <style scoped>
 .cardPosition{
-    width: 500px;
-    margin-left:1100px;
-    margin-top:200px;
-    margin-right:200px ;
-}
-.flexcard {
-    display: flex;
-    flex-direction: column;
-  }
-/* // Add the css below if your card has a toolbar, and if your toolbar's height increases according to the flex display. */
-.flexcard .v-toolbar {
-    flex: 0;
-  }
-  .imageLogin {
-  margin-bottom: 100px;
-  padding: 0px;
-  height: 100vh;
-  overflow: hidden;
-  position: relative;
-  text-align: center;
-  color: white;
-}
-
-
-.iconClass{
-    width: 30px;
-    height: 30px;
+    width: 700px;
+    position: relative;
+    height: auto;
+    display: block; 
+    margin-left: auto; 
+    margin-right: auto;
+    border-radius: 10px;
     
+
+    }
+.alink{
+    margin-top: 100px;
 }
-
-
-
+.loginButton {
+    color: white;
+  background-color: #0c479d;
+  padding: 1px 90px 1px 90px;
+  font-size: 30px;
+  font-weight: 600;
+  border-radius: 6px;
+  margin-bottom: 20px;}
 
 </style>
